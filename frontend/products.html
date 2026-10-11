@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop | Sneakers House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo">Sneakers<span>House</span></a>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+    <nav class="main-nav" id="mainNav">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/products.html" class="active">Shop</a></li>
+        <li><a href="/products.html?gender=men">Men</a></li>
+        <li><a href="/products.html?gender=women">Women</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions" id="headerActions"></div>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container">
+      <div class="shop-layout">
+        <aside class="shop-sidebar">
+          <h3 class="filter-title">Filters</h3>
+          <form id="filterForm" class="filter-form">
+            <div class="form-group">
+              <label for="searchQ">Search</label>
+              <input type="search" id="searchQ" name="q" placeholder="Search sneakers...">
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <div id="categoryFilters"></div>
+            </div>
+            <div class="form-group">
+              <label>Gender</label>
+              <div class="filter-links">
+                <a href="/products.html">All</a>
+                <a href="/products.html?gender=men">Men</a>
+                <a href="/products.html?gender=women">Women</a>
+                <a href="/products.html?gender=kids">Kids</a>
+                <a href="/products.html?gender=unisex">Unisex</a>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm" style="width:100%">Apply</button>
+          </form>
+        </aside>
+        <div>
+          <h2 class="filter-title" id="pageTitle">All Sneakers</h2>
+          <div class="product-grid" id="productGrid">
+            <div class="empty-state"><p>Loading...</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h3 class="footer-logo">Sneakers House</h3>
+        <p>Premium sneakers that defy your everyday look.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="/products.html">All Sneakers</a></li>
+          <li><a href="/products.html?gender=men">Men</a></li>
+          <li><a href="/products.html?gender=women">Women</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/about.html">About Us</a></li>
+          <li><a href="/contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li>hello@sneakershouse.com</li>
+          <li>Dhaka, Bangladesh</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2026 Sneakers House.</p></div>
+  </div>
+</footer>
+
+<script src="/js/script.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+
+async function loadProducts() {
+  const qs = params.toString();
+  const res = await fetch(`/api/products?${qs}`);
+  const data = await res.json();
+  const grid = document.getElementById('productGrid');
+  const title = document.getElementById('pageTitle');
+
+  if (params.get('category')) title.textContent = params.get('category').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  else if (params.get('gender')) title.textContent = params.get('gender').charAt(0).toUpperCase() + params.get('gender').slice(1) + "'s Sneakers";
+  else if (params.get('q')) title.textContent = `Results for "${params.get('q')}"`;
+  else title.textContent = 'All Sneakers';
+
+  if (data.products?.length) {
+    grid.innerHTML = data.products.map(p => `
+      <article class="product-card">
+        <a href="/product_detail.html?slug=${p.slug}" class="product-image">
+          ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}" loading="lazy">` : '<div class="placeholder-img">👟</div>'}
+          ${p.is_new ? '<span class="badge badge-new">New</span>' : ''}
+          ${p.stock < 1 ? '<span class="badge" style="background:var(--danger)">Sold Out</span>' : ''}
+        </a>
+        <div class="product-info">
+          <span class="product-brand">${p.brand}</span>
+          <h3><a href="/product_detail.html?slug=${p.slug}">${p.name}</a></h3>
+          <div class="product-meta">
+            <span class="product-price">${formatPrice(p.price)}</span>
+            <button class="btn btn-primary btn-sm" onclick="addToCart(${p.id})" ${p.stock < 1 ? 'disabled' : ''}>
+              ${p.stock < 1 ? 'Sold Out' : 'Add'}
+            </button>
+          </div>
+        </div>
+      </article>
+    `).join('');
+  } else {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <h2>No sneakers found</h2>
+        <p>Try a different filter or search.</p>
+        <a href="/products.html" class="btn btn-outline">View All</a>
+      </div>`;
+  }
+}
+
+async function loadCategories() {
+  const res = await fetch('/api/products/categories');
+  const data = await res.json();
+  const el = document.getElementById('categoryFilters');
+  if (data.categories) {
+    el.innerHTML = data.categories.map(c => `
+      <a href="/products.html?category=${c.slug}" class="filter-link ${params.get('category') === c.slug ? 'active' : ''}">${c.name}</a>
+    `).join('') + `<a href="/products.html" class="filter-link">All</a>`;
+  }
+}
+
+document.getElementById('filterForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const q = document.getElementById('searchQ').value.trim();
+  const url = q ? `/products.html?q=${encodeURIComponent(q)}` : '/products.html';
+  window.location.href = url;
+});
+
+if (params.get('q')) document.getElementById('searchQ').value = params.get('q');
+
+async function addToCart(productId) {
+  const res = await fetch('/api/cart/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ productId, quantity: 1 })
+  });
+  const data = await res.json();
+  showAlert(data.message, data.success ? 'success' : 'error');
+  if (data.success) updateHeaderAuth();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadProducts();
+  loadCategories();
+});
+</script>
+</body>
+</html>

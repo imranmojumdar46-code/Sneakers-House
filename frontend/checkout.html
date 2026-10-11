@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | Sneakers House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo">Sneakers<span>House</span></a>
+    <div class="header-actions" id="headerActions"></div>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container" style="max-width:640px">
+      <h1 class="section-title">Checkout</h1>
+      <form id="checkoutForm" class="auth-form" novalidate>
+        <div class="form-group">
+          <label for="full_name">Full Name *</label>
+          <input type="text" id="full_name" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input type="email" id="email" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone *</label>
+          <input type="tel" id="phone" required placeholder="+880...">
+        </div>
+        <div class="form-group">
+          <label for="address">Address *</label>
+          <textarea id="address" rows="2" required></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="city">City *</label>
+            <input type="text" id="city" required>
+          </div>
+          <div class="form-group">
+            <label for="postal_code">Postal Code *</label>
+            <input type="text" id="postal_code" required>
+          </div>
+        </div>
+        <h3 style="margin:1.25rem 0 .75rem">Payment</h3>
+        <div class="pay-methods">
+          <label class="pay-option selected" id="optBkash"><input type="radio" name="pay" value="bkash" checked> <span><strong>bKash</strong> — pay now (Send Money)</span></label>
+          <label class="pay-option" id="optCod"><input type="radio" name="pay" value="cod"> <span><strong>Cash on Delivery</strong></span></label>
+        </div>
+        <div id="bkashBox" class="bkash-box">
+          <p>1. Open your <strong>bKash app</strong> → <strong>Send Money</strong></p>
+          <p>2. Send <strong id="payTotal">৳0</strong> to <span class="bk-num" id="bkNum">01611755093</span>
+            <button type="button" class="copy-btn" id="copyNum">Copy</button></p>
+          <p><button type="button" class="btn btn-bkash" id="openBkash" style="width:100%">📲 Open bKash App &amp; Pay</button></p>
+          <p>3. Enter the number you paid from and the <strong>Transaction ID (TrxID)</strong> below.</p>
+          <div class="form-group">
+            <label for="bkash_number">Your bKash number *</label>
+            <input type="tel" id="bkash_number" placeholder="01XXXXXXXXX">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label for="bkash_trx_id">bKash TrxID *</label>
+            <input type="text" id="bkash_trx_id" placeholder="e.g. 8N7A6D5EE7" style="text-transform:uppercase">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%">Place Order</button>
+        <p style="margin-top:.75rem;font-size:.85rem;color:var(--text-muted)">Need help paying? <a href="#" class="js-whatsapp">Chat with us on WhatsApp</a></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container"><div class="footer-bottom"><p>&copy; 2026 Sneakers House.</p></div></div>
+</footer>
+<script src="/js/script.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const me = await getMe();
+  if (!me.authenticated) {
+    showAlert('Please login to checkout.', 'error');
+    setTimeout(() => { window.location.href = '/login.html'; }, 1200);
+    return;
+  }
+  // Show the amount to pay
+  try {
+    const c = await (await fetch('/api/cart', { credentials: 'include' })).json();
+    document.getElementById('payTotal').textContent = formatPrice(c.total || 0);
+    if (!c.items || !c.items.length) {
+      showAlert('Your cart is empty.', 'error');
+      setTimeout(() => { window.location.href = '/products.html'; }, 1200);
+      return;
+    }
+  } catch {}
+  try {
+    const pi = await (await fetch('/api/orders/payment-info')).json();
+    if (pi.bkash_number) document.getElementById('bkNum').textContent = pi.bkash_number;
+  } catch {}
+  if (me.user) {
+    document.getElementById('full_name').value = [me.user.first_name, me.user.last_name].filter(Boolean).join(' ');
+    document.getElementById('email').value = me.user.email || '';
+  }
+});
+
+function currentPay() { return document.querySelector('input[name="pay"]:checked').value; }
+document.querySelectorAll('input[name="pay"]').forEach(r => r.addEventListener('change', () => {
+  document.getElementById('bkashBox').style.display = currentPay() === 'bkash' ? 'block' : 'none';
+  document.getElementById('optBkash').classList.toggle('selected', currentPay() === 'bkash');
+  document.getElementById('optCod').classList.toggle('selected', currentPay() === 'cod');
+}));
+document.getElementById('openBkash').addEventListener('click', async () => {
+  const n = document.getElementById('bkNum').textContent;
+  try { await navigator.clipboard.writeText(n); } catch {}
+  showAlert('Number ' + n + ' copied. Choose Send Money in bKash and paste it.');
+  openBkashApp();
+});
+document.getElementById('copyNum').addEventListener('click', async () => {
+  const n = document.getElementById('bkNum').textContent;
+  try { await navigator.clipboard.writeText(n); showAlert('Number copied: ' + n); } catch { showAlert(n); }
+});
+
+document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {
+    full_name: document.getElementById('full_name').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    address: document.getElementById('address').value.trim(),
+    city: document.getElementById('city').value.trim(),
+    postal_code: document.getElementById('postal_code').value.trim()
+  };
+  payload.payment_method = currentPay();
+  if (payload.payment_method === 'bkash') {
+    payload.bkash_number = document.getElementById('bkash_number').value.trim();
+    payload.bkash_trx_id = document.getElementById('bkash_trx_id').value.trim();
+    if (!payload.bkash_number || !payload.bkash_trx_id) {
+      showAlert('Please enter your bKash number and TrxID after sending the money.', 'error');
+      return;
+    }
+  }
+  const required = ['full_name','email','phone','address','city','postal_code'];
+  if (required.some(k => !payload[k])) {
+    showAlert('Please fill all fields.', 'error');
+    return;
+  }
+  if (!validateEmail(payload.email)) {
+    showAlert('Invalid email.', 'error');
+    return;
+  }
+
+  const res = await fetch('/api/orders/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (data.success) {
+    window.location.href = `/order_success.html?id=${data.orderId}`;
+  } else {
+    showAlert(data.message, 'error');
+  }
+});
+</script>
+</body>
+</html>

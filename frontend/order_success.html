@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Success | Sneakers House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo">Sneakers<span>House</span></a>
+    <div class="header-actions" id="headerActions"></div>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container" style="max-width:500px;text-align:center">
+      <div class="empty-state">
+        <h1 style="font-size:3rem;margin-bottom:0.5rem">✓</h1>
+        <h2>Order Placed Successfully!</h2>
+        <p id="orderMsg">Thank you for your purchase.</p>
+        <p id="payNote" style="margin:.75rem 0"></p>
+        <a href="#" id="waSend" class="btn btn-wa" target="_blank" rel="noopener" style="display:none">💬 Send order details on WhatsApp</a>
+        <a href="/profile.html" class="btn btn-primary">View Orders</a>
+        <a href="/products.html" class="btn btn-outline">Continue Shopping</a>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="/js/script.js"></script>
+<script>
+const id = new URLSearchParams(window.location.search).get('id');
+if (id) document.getElementById('orderMsg').textContent = `Your order #${id} has been received. We'll notify you when it ships.`;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!id) return;
+  try {
+    const d = await (await fetch(`/api/orders/${id}`, { credentials: 'include' })).json();
+    if (!d.success) return;
+    const o = d.order;
+    const lines = d.items.map(i => `- ${i.name} | Size ${i.size || '-'} | Qty ${i.quantity}`).join('\n');
+    const pay = o.payment_method === 'bkash'
+      ? `bKash paid from ${o.bkash_number}, TrxID: ${o.bkash_trx_id}`
+      : 'Cash on Delivery';
+    const msg = `New order #${o.id}\nName: ${o.full_name}\nPhone: ${o.phone}\nAddress: ${o.address}, ${o.city} ${o.postal_code}\n${lines}\nTotal: ${formatPrice(o.total_amount)}\nPayment: ${pay}`;
+    const wa = document.getElementById('waSend');
+    wa.href = whatsappLink(msg);
+    wa.style.display = 'inline-block';
+    document.getElementById('payNote').textContent = o.payment_method === 'bkash'
+      ? 'We will verify your bKash payment (TrxID ' + o.bkash_trx_id + ') shortly. Tap the WhatsApp button to notify us instantly.'
+      : 'Pay in cash when your order arrives. Tap the WhatsApp button to notify us instantly.';
+  } catch {}
+});
+</script>
+</body>
+</html>

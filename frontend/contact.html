@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact | Sneakers House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo">Sneakers<span>House</span></a>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+    <nav class="main-nav" id="mainNav">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/products.html">Shop</a></li>
+        <li><a href="/products.html?gender=men">Men</a></li>
+        <li><a href="/products.html?gender=women">Women</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/contact.html" class="active">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions" id="headerActions"></div>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container" style="max-width:640px">
+      <h1 class="section-title">Contact Us</h1>
+      <p style="margin-bottom:2rem;color:var(--text-muted)">Have a question about sizing, shipping, or an order? Send us a message and we'll get back within 24 hours.</p>
+
+      <div class="contact-quick">
+        <a href="#" class="btn btn-wa js-whatsapp">💬 WhatsApp: 01611755093</a>
+        <a href="#" class="btn btn-gmail js-gmail">✉️ Gmail</a>
+        <a href="#" class="btn btn-outline js-call">📞 Call: 01611755093</a>
+      </div>
+
+      <form id="contactForm" class="auth-form" novalidate>
+        <div class="form-group">
+          <label for="name">Full Name *</label>
+          <input type="text" id="name" name="name" required minlength="2" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input type="email" id="email" name="email" required placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label for="subject">Subject *</label>
+          <input type="text" id="subject" name="subject" required minlength="3" placeholder="Order inquiry, size help...">
+        </div>
+        <div class="form-group">
+          <label for="message">Message *</label>
+          <textarea id="message" name="message" rows="5" required minlength="10" placeholder="How can we help?"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%">Send Message</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom"><p>&copy; 2026 Sneakers House.</p></div>
+  </div>
+</footer>
+<script src="/js/script.js"></script>
+<script>
+document.getElementById('contactForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('name');
+  const email = document.getElementById('email');
+  const subject = document.getElementById('subject');
+  const message = document.getElementById('message');
+  let valid = true;
+
+  [name, email, subject, message].forEach(clearFieldError);
+
+  if (name.value.trim().length < 2) { setFieldError(name, 'Name must be at least 2 characters'); valid = false; }
+  if (!validateEmail(email.value)) { setFieldError(email, 'Enter a valid email'); valid = false; }
+  if (subject.value.trim().length < 3) { setFieldError(subject, 'Subject is required'); valid = false; }
+  if (message.value.trim().length < 10) { setFieldError(message, 'Message must be at least 10 characters'); valid = false; }
+
+  if (!valid) return;
+
+  const res = await fetch('/api/contact', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      name: name.value.trim(),
+      email: email.value.trim(),
+      subject: subject.value.trim(),
+      message: message.value.trim()
+    })
+  });
+  const data = await res.json();
+  showAlert(data.message, data.success ? 'success' : 'error');
+  if (data.success) e.target.reset();
+});
+</script>
+</body>
+</html>

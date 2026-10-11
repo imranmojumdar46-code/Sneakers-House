@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register | Sneakers House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo">Sneakers<span>House</span></a>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+    <nav class="main-nav" id="mainNav">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/products.html">Shop</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions" id="headerActions"></div>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container" style="max-width:480px">
+      <h1 class="section-title" style="text-align:center">Create Account</h1>
+      <form id="registerForm" class="auth-form" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="first_name">First Name</label>
+            <input type="text" id="first_name" name="first_name" placeholder="John">
+          </div>
+          <div class="form-group">
+            <label for="last_name">Last Name</label>
+            <input type="text" id="last_name" name="last_name" placeholder="Doe">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="username">Username *</label>
+          <input type="text" id="username" name="username" required minlength="3" autocomplete="username" placeholder="johndoe">
+        </div>
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input type="email" id="email" name="email" required autocomplete="email" placeholder="john@example.com">
+        </div>
+        <div class="form-group">
+          <label for="password">Password *</label>
+          <input type="password" id="password" name="password" required minlength="6" autocomplete="new-password" placeholder="Min 6 characters">
+        </div>
+        <div class="form-group">
+          <label for="confirm">Confirm Password *</label>
+          <input type="password" id="confirm" name="confirm" required minlength="6" placeholder="Repeat password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%">Sign Up</button>
+      </form>
+      <div id="googleBox" style="margin-top:1.25rem;text-align:center">
+        <p style="color:var(--text-muted);margin-bottom:.75rem">— or —</p>
+        <div class="g-slot" style="display:flex;justify-content:center"></div>
+      </div>
+      <p style="text-align:center;margin-top:1.5rem;color:var(--text-muted)">
+        Already have an account? <a href="/login.html" style="color:var(--text);font-weight:600">Login</a>
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container"><div class="footer-bottom"><p>&copy; 2026 Sneakers House.</p></div></div>
+</footer>
+<script src="/js/script.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => initGoogleButton('googleBox'));
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fields = {
+    first_name: document.getElementById('first_name'),
+    last_name: document.getElementById('last_name'),
+    username: document.getElementById('username'),
+    email: document.getElementById('email'),
+    password: document.getElementById('password'),
+    confirm: document.getElementById('confirm')
+  };
+  Object.values(fields).forEach(clearFieldError);
+  let valid = true;
+
+  if (fields.username.value.trim().length < 3) { setFieldError(fields.username, 'Username must be at least 3 characters'); valid = false; }
+  if (!validateEmail(fields.email.value)) { setFieldError(fields.email, 'Enter a valid email'); valid = false; }
+  if (fields.password.value.length < 6) { setFieldError(fields.password, 'Password must be at least 6 characters'); valid = false; }
+  if (fields.password.value !== fields.confirm.value) { setFieldError(fields.confirm, 'Passwords do not match'); valid = false; }
+  if (!valid) return;
+
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      username: fields.username.value.trim(),
+      email: fields.email.value.trim(),
+      password: fields.password.value,
+      first_name: fields.first_name.value.trim(),
+      last_name: fields.last_name.value.trim()
+    })
+  });
+  const data = await res.json();
+  if (data.success) {
+    showAlert(data.message, 'success');
+    setTimeout(() => { window.location.href = '/'; }, 800);
+  } else {
+    showAlert(data.message, 'error');
+  }
+});
+</script>
+</body>
+</html>

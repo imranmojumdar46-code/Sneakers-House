@@ -1,0 +1,131 @@
+/**
+ * Simple file-based JSON database (no native deps).
+ * Mirrors the SQL schema for easy migration to MySQL/SQLite later.
+ */
+const fs = require('fs');
+const path = require('path');
+const bcrypt = require('bcryptjs');
+
+const os = require('os');
+
+// Bundled seed data (read-only on Vercel / Netlify)
+const SEED_PATH = path.join(__dirname, '../../database/db.json');
+
+// Where we actually read/write. Tries, in order:
+//   1. DATA_DIR env var (e.g. a Render persistent disk mounted at /var/data)
+//   2. the project's database/ folder (works locally and on normal Node hosts)
+//   3. the OS temp folder (the only writable place on Vercel / Netlify functions)
+function pickDbPath() {
+  const candidates = [];
+  if (process.env.DATA_DIR) candidates.push(process.env.DATA_DIR);
+  candidates.push(path.dirname(SEED_PATH));
+  candidates.push(path.join(os.tmpdir(), 'sneakers-house'));
+  for (const dir of candidates) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      fs.accessSync(dir, fs.constants.W_OK);
+      const probe = path.join(dir, '.write-test');
+      fs.writeFileSync(probe, 'ok');
+      fs.unlinkSync(probe);
+      return path.join(dir, 'db.json');
+    } catch (e) { /* try next */ }
+  }
+  return path.join(os.tmpdir(), 'db.json');
+}
+const DB_PATH = pickDbPath();
+
+const defaultData = {
+  users: [],
+  profiles: [],
+  categories: [
+    { id: 1, name: 'Lifestyle', slug: 'lifestyle', description: 'Everyday casual sneakers for street style' },
+    { id: 2, name: 'Running', slug: 'running', description: 'Performance running shoes for athletes' },
+    { id: 3, name: 'Basketball', slug: 'basketball', description: 'Court-ready basketball sneakers' },
+    { id: 4, name: 'Training', slug: 'training', description: 'Cross-training and gym footwear' }
+  ],
+  products: [
+    { id: 1, category_id: 1, name: 'Air Flex Max', slug: 'air-flex-max', description: 'Ultra-comfortable lifestyle sneaker with responsive cushioning and breathable mesh upper. Perfect for all-day wear.', price: 20790, stock: 45, image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80', gender: 'unisex', brand: 'STRIDE', color: 'Red/White', is_featured: 1, is_new: 1, created_at: new Date().toISOString() },
+    { id: 2, category_id: 1, name: 'Urban Classic Low', slug: 'urban-classic-low', description: 'Timeless low-top design with premium leather and rubber outsole. Clean silhouette for everyday style.', price: 12490, stock: 60, image_url: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=800&q=80', gender: 'unisex', brand: 'STRIDE', color: 'White', is_featured: 1, is_new: 0, created_at: new Date().toISOString() },
+    { id: 3, category_id: 2, name: 'Velocity Runner Pro', slug: 'velocity-runner-pro', description: 'Lightweight racing flat with carbon plate energy return. Built for speed and long-distance comfort.', price: 18990, stock: 30, image_url: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=800&q=80', gender: 'men', brand: 'STRIDE', color: 'Black/Neon', is_featured: 1, is_new: 1, created_at: new Date().toISOString() },
+    { id: 4, category_id: 1, name: 'Cloud Walker', slug: 'cloud-walker', description: 'Plush foam midsole and soft knit upper for cloud-like steps. Ideal for walking and casual outings.', price: 9990, stock: 80, image_url: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80', gender: 'women', brand: 'STRIDE', color: 'Pink/Grey', is_featured: 1, is_new: 0, created_at: new Date().toISOString() },
+    { id: 5, category_id: 3, name: 'Court Dominator', slug: 'court-dominator', description: 'High-top basketball shoe with ankle support and sticky rubber sole for superior traction on the court.', price: 15990, stock: 25, image_url: 'https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?auto=format&fit=crop&w=800&q=80', gender: 'men', brand: 'STRIDE', color: 'Black/Gold', is_featured: 1, is_new: 0, created_at: new Date().toISOString() },
+    { id: 6, category_id: 2, name: 'Trail Blazer X', slug: 'trail-blazer-x', description: 'Rugged trail running shoe with aggressive lugs and waterproof membrane for off-road adventures.', price: 17490, stock: 35, image_url: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=800&q=80', gender: 'unisex', brand: 'STRIDE', color: 'Olive/Black', is_featured: 0, is_new: 1, created_at: new Date().toISOString() },
+    { id: 7, category_id: 4, name: 'Power Lift Trainer', slug: 'power-lift-trainer', description: 'Stable training shoe with wide base and firm midsole for weightlifting and HIIT sessions.', price: 11490, stock: 40, image_url: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?auto=format&fit=crop&w=800&q=80', gender: 'unisex', brand: 'STRIDE', color: 'Grey/Orange', is_featured: 0, is_new: 0, created_at: new Date().toISOString() },
+    { id: 8, category_id: 1, name: 'Retro Runner 90s', slug: 'retro-runner-90s', description: 'Throwback 90s silhouette reimagined with modern materials and improved cushioning.', price: 13490, stock: 50, image_url: 'https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111?auto=format&fit=crop&w=800&q=80', gender: 'unisex', brand: 'STRIDE', color: 'Blue/White', is_featured: 1, is_new: 0, created_at: new Date().toISOString() },
+    { id: 9, category_id: 1, name: 'Minimalist Slip-On', slug: 'minimalist-slip-on', description: 'Easy slip-on design with stretch fabric and soft footbed. Zero fuss, maximum comfort.', price: 8490, stock: 70, image_url: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=800&q=80', gender: 'women', brand: 'STRIDE', color: 'Beige', is_featured: 0, is_new: 1, created_at: new Date().toISOString() },
+    { id: 10, category_id: 3, name: 'Sky High Dunk', slug: 'sky-high-dunk', description: 'Elevated platform dunk-style sneaker with bold color blocking and durable construction.', price: 14990, stock: 20, image_url: 'https://images.unsplash.com/photo-1605348532760-6753d2c43380?auto=format&fit=crop&w=800&q=80', gender: 'unisex', brand: 'STRIDE', color: 'Multi', is_featured: 1, is_new: 1, created_at: new Date().toISOString() },
+    { id: 11, category_id: 2, name: 'Endurance Elite', slug: 'endurance-elite', description: 'Marathon-ready shoe with dual-density foam and engineered mesh for breathability on long runs.', price: 19990, stock: 28, image_url: 'https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=800&q=80', gender: 'men', brand: 'STRIDE', color: 'Navy/Red', is_featured: 0, is_new: 0, created_at: new Date().toISOString() },
+    { id: 12, category_id: 1, name: 'Kids Sparkle Glide', slug: 'kids-sparkle-glide', description: 'Fun and colorful kids sneaker with easy velcro straps and soft cushioning for growing feet.', price: 6990, stock: 55, image_url: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782?auto=format&fit=crop&w=800&q=80', gender: 'kids', brand: 'STRIDE', color: 'Rainbow', is_featured: 0, is_new: 1, created_at: new Date().toISOString() }
+  ],
+  contact_messages: [],
+  orders: [],
+  order_items: [],
+  _seq: { users: 2, profiles: 2, products: 12, contact_messages: 0, orders: 0, order_items: 0 }
+};
+
+function load() {
+  if (!fs.existsSync(DB_PATH) && fs.existsSync(SEED_PATH) && SEED_PATH !== DB_PATH) {
+    try { fs.copyFileSync(SEED_PATH, DB_PATH); } catch (e) { /* fall through */ }
+  }
+  if (!fs.existsSync(DB_PATH)) {
+    const adminHash = bcrypt.hashSync('admin1234', 10);
+    const demoHash = bcrypt.hashSync('demo1234', 10);
+    defaultData.users = [
+      { id: 1, username: 'admin', email: 'admin@sneakershouse.com', password: adminHash, first_name: 'Admin', last_name: 'User', is_admin: 1, created_at: new Date().toISOString() },
+      { id: 2, username: 'demo', email: 'demo@sneakershouse.com', password: demoHash, first_name: 'Demo', last_name: 'User', is_admin: 0, created_at: new Date().toISOString() }
+    ];
+    defaultData.profiles = [
+      { id: 1, user_id: 1, phone: '+8801700000001', address: 'Admin Office', city: 'Dhaka', created_at: new Date().toISOString() },
+      { id: 2, user_id: 2, phone: '+8801700000002', address: '123 Demo Street', city: 'Dhaka', created_at: new Date().toISOString() }
+    ];
+    save(defaultData);
+    return JSON.parse(JSON.stringify(defaultData));
+  }
+  return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+}
+
+function save(d) {
+  try {
+    const dir = path.dirname(DB_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(DB_PATH, JSON.stringify(d, null, 2));
+  } catch (e) {
+    // Never crash a request just because the disk is read-only; data stays in memory.
+    console.warn('DB save failed (read-only disk?):', e.message);
+  }
+}
+
+let data = load();
+
+const db = {
+  getAll(table) { return data[table] || []; },
+  getById(table, id) { return (data[table] || []).find(r => r.id == id) || null; },
+  find(table, pred) { return (data[table] || []).find(pred) || null; },
+  filter(table, pred) { return (data[table] || []).filter(pred); },
+  insert(table, row) {
+    if (!data._seq[table]) data._seq[table] = 0;
+    data._seq[table]++;
+    const record = { id: data._seq[table], ...row };
+    if (!data[table]) data[table] = [];
+    data[table].push(record);
+    save(data);
+    return record;
+  },
+  update(table, id, updates) {
+    const idx = (data[table] || []).findIndex(r => r.id == id);
+    if (idx === -1) return null;
+    data[table][idx] = { ...data[table][idx], ...updates };
+    save(data);
+    return data[table][idx];
+  },
+  remove(table, id) {
+    const before = (data[table] || []).length;
+    data[table] = (data[table] || []).filter(r => r.id != id);
+    save(data);
+    return before - data[table].length;
+  },
+  reload() { data = load(); }
+};
+
+db.path = DB_PATH;
+module.exports = db;

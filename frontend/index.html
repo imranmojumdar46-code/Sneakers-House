@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home | Sneakers House — Premium Sneakers</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo">Sneakers<span>House</span></a>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+    <nav class="main-nav" id="mainNav">
+      <ul>
+        <li><a href="/" class="active">Home</a></li>
+        <li><a href="/products.html">Shop</a></li>
+        <li><a href="/products.html?gender=men">Men</a></li>
+        <li><a href="/products.html?gender=women">Women</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions" id="headerActions">
+      <a href="/cart.html" class="icon-btn" title="Cart">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-badge" id="cartBadge" style="display:none"></span>
+      </a>
+      <a href="/login.html" class="btn btn-outline btn-sm">Login</a>
+      <a href="/register.html" class="btn btn-primary btn-sm">Sign Up</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-text">
+        <p class="hero-eyebrow">New Season Drop</p>
+        <h1>Sneakers That<br>Defy Your Every<br>day Look</h1>
+        <p class="hero-lead">Discover premium footwear designed for comfort, style, and the streets. Step into something extraordinary.</p>
+        <div class="hero-cta">
+          <a href="/products.html" class="btn btn-light btn-lg">Shop Now</a>
+          <a href="/products.html?category=lifestyle" class="btn btn-ghost btn-lg">Explore Collection</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-img-wrap">
+          <img src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=800&q=80" alt="Premium white sneakers" class="hero-main-img">
+          <div class="hero-card">
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80" alt="Featured pair">
+            <div class="hero-card-info">
+              <span>Air Flex Max</span>
+              <strong>৳20,790</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Promo cards -->
+  <section class="section promo-section">
+    <div class="container">
+      <div class="promo-grid">
+        <a href="/products.html?category=lifestyle" class="promo-card promo-1">
+          <img src="https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=600&q=80" alt="Lifestyle" loading="lazy">
+          <div class="promo-overlay">
+            <h3>Sneakers That Move With You. Comfortable, Durable, And Always In Style.</h3>
+            <span class="btn btn-light btn-sm">Find Your Fit</span>
+          </div>
+        </a>
+        <a href="/products.html?category=running" class="promo-card promo-2">
+          <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=600&q=80" alt="Fresh Drops" loading="lazy">
+          <div class="promo-overlay">
+            <h3>Fresh Drops. Iconic Silhouettes. Sneakers That Speak Before You Do.</h3>
+            <span class="btn btn-light btn-sm">Get Your Pair</span>
+          </div>
+        </a>
+        <a href="/products.html" class="promo-card promo-3">
+          <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80" alt="All Sneakers" loading="lazy">
+          <div class="promo-overlay">
+            <h3>Shop The Full Collection. From Everyday Essentials To Limited Drops.</h3>
+            <span class="btn btn-light btn-sm">Browse All</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Featured Sneakers</h2>
+        <a href="/products.html" class="btn btn-outline btn-sm">View All</a>
+      </div>
+      <div class="product-grid" id="featuredGrid">
+        <div class="empty-state"><p>Loading featured products...</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- New Arrivals -->
+  <section class="section" style="background:var(--bg-warm)">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">New Arrivals</h2>
+        <a href="/products.html?is_new=1" class="btn btn-outline btn-sm">See What's New</a>
+      </div>
+      <div class="product-grid" id="newestGrid">
+        <div class="empty-state"><p>Loading new arrivals...</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title" style="text-align:center;margin-bottom:2rem">Shop by Category</h2>
+      <div class="category-grid" id="categoryGrid"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h3 class="footer-logo">Sneakers House</h3>
+        <p>Premium sneakers that defy your everyday look. Crafted for comfort, designed for style.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="/products.html">All Sneakers</a></li>
+          <li><a href="/products.html?gender=men">Men</a></li>
+          <li><a href="/products.html?gender=women">Women</a></li>
+          <li><a href="/products.html?gender=kids">Kids</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/about.html">About Us</a></li>
+          <li><a href="/contact.html">Contact</a></li>
+          <li><a href="/login.html">Login</a></li>
+          <li><a href="/register.html">Register</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="#" class="js-gmail">emranmojumder22@gmail.com</a></li>
+          <li><a href="#" class="js-whatsapp">WhatsApp: +880 1611755093</a></li>
+          <li>Feni, Bangladesh</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Sneakers House. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/script.js"></script>
+<script>
+async function loadHome() {
+  // Featured
+  const fRes = await fetch('/api/products?featured=1');
+  const fData = await fRes.json();
+  const fGrid = document.getElementById('featuredGrid');
+  if (fData.products?.length) {
+    fGrid.innerHTML = fData.products.slice(0, 8).map(p => productCard(p)).join('');
+  } else {
+    fGrid.innerHTML = '<div class="empty-state"><p>No featured products yet.</p></div>';
+  }
+
+  // Newest
+  const nRes = await fetch('/api/products?is_new=1');
+  const nData = await nRes.json();
+  const nGrid = document.getElementById('newestGrid');
+  if (nData.products?.length) {
+    nGrid.innerHTML = nData.products.slice(0, 6).map(p => productCard(p)).join('');
+  } else {
+    nGrid.innerHTML = '<div class="empty-state"><p>No new arrivals yet.</p></div>';
+  }
+
+  // Categories
+  const cRes = await fetch('/api/products/categories');
+  const cData = await cRes.json();
+  const cGrid = document.getElementById('categoryGrid');
+  if (cData.categories?.length) {
+    cGrid.innerHTML = cData.categories.map(c => `
+      <a href="/products.html?category=${c.slug}" class="category-card">
+        <h3>${c.name}</h3>
+        <p>${c.description || ''}</p>
+      </a>
+    `).join('');
+  }
+}
+
+function productCard(p) {
+  return `
+    <article class="product-card">
+      <a href="/product_detail.html?slug=${p.slug}" class="product-image">
+        ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}" loading="lazy">` : '<div class="placeholder-img">👟</div>'}
+        ${p.is_new ? '<span class="badge badge-new">New</span>' : ''}
+        ${p.stock < 1 ? '<span class="badge" style="background:var(--danger)">Sold Out</span>' : ''}
+      </a>
+      <div class="product-info">
+        <span class="product-brand">${p.brand}</span>
+        <h3><a href="/product_detail.html?slug=${p.slug}">${p.name}</a></h3>
+        <div class="product-meta">
+          <span class="product-price">${formatPrice(p.price)}</span>
+          <button class="btn btn-primary btn-sm" onclick="addToCart(${p.id})" ${p.stock < 1 ? 'disabled' : ''}>
+            ${p.stock < 1 ? 'Sold Out' : 'Add'}
+          </button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+async function addToCart(productId) {
+  const res = await fetch('/api/cart/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ productId, quantity: 1 })
+  });
+  const data = await res.json();
+  if (data.success) {
+    showAlert(data.message, 'success');
+    updateHeaderAuth();
+  } else {
+    showAlert(data.message, 'error');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadHome);
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "sneakers-house",
+  "version": "1.0.0",
+  "description": "Sneakers House - Premium Sneaker E-Commerce with Node.js + Express",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "init-db": "node backend/config/initDb.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "uuid": "^11.0.3",
+    "cookie-session": "^2.1.0",
+    "serverless-http": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
